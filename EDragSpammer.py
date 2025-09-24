@@ -239,9 +239,9 @@ def main():
         # Wait for base to be found
         time.sleep(2)
         wait_until_pixel_not_color((234, 239, 244), (1, 1))
-        time.sleep(2)
+        wait_until_pixel_color((247, 13, 23), (161, 776))
         # Select troop  
-        click_after_random_delay(random.randint(140, 240), random.randint(920, 1040))
+        click_after_random_delay(random.randint(160, 260), random.randint(920, 1040))
         # Place Troop
         tolerance = random.randint(-10, 10)
         rand = random.randint(1, 2)
