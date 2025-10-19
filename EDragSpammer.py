@@ -199,20 +199,21 @@ def main():
         print(f"Could not set process priority: {e}")
         logging.warning(f"Could not set process priority: {e}")
 
-    print("What trophies do you want to climb to?")
-    target_input = input()
-    # Coerce target to int (accepts plain numbers or strings containing digits)
-    try:
-        target = int(target_input)
-    except ValueError:
-        m = re.search(r"(\d+)", target_input)
-        if m:
-            target = int(m.group(1))
-        else:
-            print("Please enter a numeric target (e.g., 1200).")
-            return
-
-    print(f"Climbing to {target} trophies, press 'q' to quit.")
+    # print("What trophies do you want to climb to?")
+    # target_input = input()
+    # # Coerce target to int (accepts plain numbers or strings containing digits)
+    # try:
+    #     target = int(target_input)
+    # except ValueError:
+    #     m = re.search(r"(\d+)", target_input)
+    #     if m:
+    #         target = int(m.group(1))
+    #     else:
+    #         print("Please enter a numeric target (e.g., 1200).")
+    #         return
+    #
+    # print(f"Climbing to {target} trophies, press 'q' to quit.")
+    print("Starting. Press q to quit.")
 
     # print("Selecting army in slot 1...")
     # click_after_random_delay(random.randint(40, 100), random.randint(760, 820))
@@ -225,21 +226,19 @@ def main():
     listener.start()
     keyboard_controller = Controller()
 
-
-    # TODO: Add check for loot screenshot and stop if it is same as last time
     while running:
         wait_until_pixel_color((33, 221, 255), (77, 35))
         time.sleep(2)
-        if (trophies_above(target)):
-            exit(0)
+        # if (trophies_above(target)):
+        #     exit(0)
         # Click attack
         click_after_random_delay(random.randint(75, 175), random.randint(900, 1000))
         # Click find match
-        click_after_random_delay(random.randint(1250, 1500), random.randint(600, 650))
+        click_after_random_delay(random.randint(130, 500), random.randint(740, 860))
         # Wait for base to be found
         time.sleep(2)
-        wait_until_pixel_not_color((234, 239, 244), (1, 1))
-        wait_until_pixel_color((247, 13, 23), (161, 776))
+        wait_until_pixel_not_color((235, 240, 245), (1, 1))
+        wait_until_pixel_color((251, 46, 55), (90, 775))
         # Select troop  
         click_after_random_delay(random.randint(160, 260), random.randint(920, 1040))
         # Place Troop
