@@ -276,15 +276,15 @@ def main():
         click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 500)
         click_after_random_delay(random.randint(620, 720), random.randint(920, 980), 300, 500)
         click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 500)
-        click_after_random_delay(random.randint(760, 860), random.randint(920, 1000), 300, 500)
+        click_after_random_delay(random.randint(760, 860), random.randint(920, 970), 300, 500)
         click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 500)
         click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 300, 500)
         click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 500)
         # Activate abilities
         click_after_random_delay(random.randint(460, 560), random.randint(920, 1040))
         click_after_random_delay(random.randint(620, 720), random.randint(920, 1040), 100, 200)
-        click_after_random_delay(random.randint(760, 860), random.randint(920, 1040), 100, 200)
         click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 100, 200)
+        click_after_random_delay(random.randint(760, 860), random.randint(920, 1040), 2000, 2100)
         # End battle
         while True:
             if get_pixel_rgb((1629, 809)) == (196, 200, 194):
