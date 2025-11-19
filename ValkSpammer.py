@@ -236,12 +236,12 @@ def main():
         # if (trophies_above(target)):
         #     exit(0)
         # Click attack
-        click_after_random_delay(random.randint(75, 175), random.randint(900, 1000))
+        click_after_random_delay(random.randint(75, 175), random.randint(900, 1000), 100, 200)
         # Click find match
-        click_after_random_delay(random.randint(130, 500), random.randint(740, 860))
+        click_after_random_delay(random.randint(130, 500), random.randint(740, 860), 500, 1000)
         # Click attack on army screen
         # wait_until_pixel_color((189, 235, 137), (1620, 950))
-        click_after_random_delay(random.randint(1525, 1850), random.randint(930, 980))
+        click_after_random_delay(random.randint(1525, 1850), random.randint(930, 980), 300, 600)
         # Wait for base to be found
         time.sleep(2)
         wait_until_pixel_not_color((235, 240, 245), (1, 1))
@@ -254,32 +254,32 @@ def main():
         place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 10, 50, 150)
         place_in_interval((random.randint(670, 680), random.randint(850, 860)), (random.randint(210, 220), random.randint(520, 530)), 10, 50, 150)
         # Siege Machine
-        click_after_random_delay(random.randint(320, 420), random.randint(920, 1040))
-        click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530))
+        click_after_random_delay(random.randint(320, 420), random.randint(920, 1040), 500, 1000)
+        click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530), 300, 500)
         # EQ spells for siege
-        click_after_random_delay(random.randint(1070, 1180), random.randint(920, 1040), 300, 500)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 300, 500)
+        click_after_random_delay(random.randint(1070, 1180), random.randint(920, 1040), 200, 300)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 200, 300)
         click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
         click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
         click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
         click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
         click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
         # EQ for heroes
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 300, 500)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 200, 300)
         click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         # Place heroes
-        click_after_random_delay(random.randint(460, 560), random.randint(920, 1040), 300, 500)
-        click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 500)
-        click_after_random_delay(random.randint(620, 720), random.randint(920, 980), 300, 500)
-        click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 500)
-        click_after_random_delay(random.randint(760, 860), random.randint(920, 970), 300, 500)
-        click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 500)
-        click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 300, 500)
-        click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 500)
+        click_after_random_delay(random.randint(460, 560), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 400)
+        click_after_random_delay(random.randint(620, 720), random.randint(920, 980), 300, 400)
+        click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 400)
+        click_after_random_delay(random.randint(760, 860), random.randint(920, 970), 300, 400)
+        click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 400)
+        click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 400)
         # Activate abilities
         click_after_random_delay(random.randint(460, 560), random.randint(920, 1040))
         click_after_random_delay(random.randint(620, 720), random.randint(920, 1040), 100, 200)
@@ -298,7 +298,7 @@ def main():
             time.sleep(0.05)
 
         # Return to base
-        click_after_random_delay(random.randint(840, 1080), random.randint(880, 960))
+        click_after_random_delay(random.randint(840, 1080), random.randint(880, 960), 800, 950)
 
 
 
