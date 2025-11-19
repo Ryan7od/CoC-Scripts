@@ -151,11 +151,7 @@ def wait_until_pixel_not_color(expected_rgb: Tuple[int, int, int], point: Tuple[
     try:
         with mss.mss() as sct:
             while True:
-                shot = sct.grab({"left": point[0], "top": point[1], "width": 1, "height": 1})
-                # mss returns BGRA
-                b, g, r, _ = np.array(shot)[0, 0]
-                rgb = (int(r), int(g), int(b))
-                if rgb != expected_rgb:
+                if get_pixel_rgb(point) != expected_rgb:
                     return True
                 time.sleep(poll_interval)
     except Exception as e:
@@ -172,16 +168,23 @@ def wait_until_pixel_color(expected_rgb: Tuple[int, int, int], point: Tuple[int,
     try:
         with mss.mss() as sct:
             while True:
-                shot = sct.grab({"left": point[0], "top": point[1], "width": 1, "height": 1})
-                # mss returns BGRA
-                b, g, r, _ = np.array(shot)[0, 0]
-                rgb = (int(r), int(g), int(b))
-                if rgb == expected_rgb:
+                if get_pixel_rgb(point) == expected_rgb:
                     return True
                 time.sleep(poll_interval)
     except Exception as e:
         print(f"Pixel check failed: {e}")
         return False
+
+def get_pixel_rgb(point: Tuple[int, int]) -> Tuple[int, int, int]:
+    try:
+        with mss.mss() as sct:
+            shot = sct.grab({"left": point[0], "top": point[1], "width": 1, "height": 1})
+            # mss returns BGRA
+            b, g, r, _ = np.array(shot)[0, 0]
+            return (int(r), int(g), int(b))
+    except Exception as e:
+        print(f"Pixel check failed: {e}")
+        return (0, 0, 0)
 
 
 def place_in_interval(point1: Tuple[int, int], point2: Tuple[int, int], number_of_units: int, lowtime: int = 200, hightime: int = 500) -> None:
@@ -245,43 +248,58 @@ def main():
         wait_until_pixel_color((247, 13, 22), (90, 775))
         # Select troop  
         click_after_random_delay(random.randint(160, 260), random.randint(920, 1040))
-        # Place Troop
-        tolerance = random.randint(-10, 10)
-        rand = random.randint(1, 2)
-        if (rand == 1): # right top
-            left = (1100 + tolerance, 20 + tolerance)
-            right = (1680 + tolerance, 460 + tolerance)
-        else: # left top
-            left = (220 + tolerance, 480 + tolerance)
-            right = (840 + tolerance, 20 + tolerance)
-        place_in_interval(left, right, 11)
-        # Place heroes
+        # Place troop
+        place_in_interval((random.randint(210, 220), random.randint(510, 520)), (random.randint(880, 890), random.randint(30, 40)), 11, 50, 150)
+        place_in_interval((random.randint(1160, 1170), random.randint(30, 40)), (random.randint(1790, 1800), random.randint(510, 520)), 11, 50, 150)
+        place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 10, 50, 150)
+        place_in_interval((random.randint(670, 680), random.randint(850, 860)), (random.randint(210, 220), random.randint(520, 530)), 10, 50, 150)
+        # Siege Machine
         click_after_random_delay(random.randint(320, 420), random.randint(920, 1040))
-        click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 500)
+        click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530))
+        # EQ spells for siege
+        click_after_random_delay(random.randint(1070, 1180), random.randint(920, 1040), 300, 500)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 300, 500)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # EQ for heroes
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 300, 500)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        # Place heroes
         click_after_random_delay(random.randint(460, 560), random.randint(920, 1040), 300, 500)
-        click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 500)
+        click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 500)
         click_after_random_delay(random.randint(620, 720), random.randint(920, 980), 300, 500)
+        click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 500)
+        click_after_random_delay(random.randint(760, 860), random.randint(920, 1000), 300, 500)
         click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 500)
-        click_after_random_delay(random.randint(760, 860), random.randint(920, 1040), 300, 500)
+        click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 300, 500)
         click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 500)
         # Activate abilities
-        click_after_random_delay(random.randint(320, 420), random.randint(920, 1040))
-        click_after_random_delay(random.randint(460, 560), random.randint(920, 1040), 100, 200)
+        click_after_random_delay(random.randint(460, 560), random.randint(920, 1040))
         click_after_random_delay(random.randint(620, 720), random.randint(920, 1040), 100, 200)
         click_after_random_delay(random.randint(760, 860), random.randint(920, 1040), 100, 200)
-        # Select rage
-        click_after_random_delay(random.randint(920, 1030), random.randint(920, 1040))
-        # Place Rage
-        if (rand == 1): #right top
-            left = (1000 + tolerance, 250 + tolerance)
-            right = (1350 + tolerance, 500 + tolerance)
-        else: # left top
-            left = (600 + tolerance, 500 + tolerance)
-            right = (1000 + tolerance, 250 + tolerance)
-        place_in_interval(left, right, 5)
+        click_after_random_delay(random.randint(910, 1020), random.randint(920, 1040), 100, 200)
         # End battle
-        wait_until_pixel_color((108, 187, 31), (900, 955))
+        while True:
+            if get_pixel_rgb((1629, 809)) == (196, 200, 194):
+                # 1 Star
+                click_after_random_delay(random.randint(60, 220), random.randint(780, 825))
+                click_after_random_delay(random.randint(1020, 1320), random.randint(640, 740), 50, 200)
+                break
+            if get_pixel_rgb((900, 955)) == (108, 187, 31):
+                # Battle ended
+                break
+            time.sleep(0.05)
+
+        # Return to base
         click_after_random_delay(random.randint(840, 1080), random.randint(880, 960))
+
 
 
     listener.join()
