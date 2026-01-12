@@ -244,8 +244,8 @@ def main():
         click_after_random_delay(random.randint(1525, 1850), random.randint(930, 980), 300, 600)
         # Wait for base to be found
         time.sleep(2)
-        wait_until_pixel_not_color((235, 240, 245), (1, 1))
-        wait_until_pixel_color((247, 13, 22), (90, 775))
+        wait_until_pixel_not_color((234, 239, 244), (0, 0))
+        wait_until_pixel_color((248, 13, 22), (90, 775))
         # Select troop  
         click_after_random_delay(random.randint(160, 260), random.randint(920, 1040))
         # Place troop
@@ -287,7 +287,7 @@ def main():
         click_after_random_delay(random.randint(760, 860), random.randint(920, 1040), 2000, 2100)
         # End battle
         while True:
-            if get_pixel_rgb((1629, 809)) == (196, 200, 194):
+            if get_pixel_rgb((1629, 809)) == (196, 200, 195):
                 # 1 Star
                 click_after_random_delay(random.randint(60, 220), random.randint(780, 825))
                 click_after_random_delay(random.randint(1020, 1320), random.randint(640, 740), 50, 200)
