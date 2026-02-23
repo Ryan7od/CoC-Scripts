@@ -230,6 +230,7 @@ def main():
     listener.start()
     keyboard_controller = Controller()
 
+    # offset for event troop ~145
     offset = 0
 
     while running:
