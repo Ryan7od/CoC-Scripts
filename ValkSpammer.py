@@ -259,7 +259,7 @@ def main():
         place_in_interval((random.randint(210, 220), random.randint(510, 520)), (random.randint(880, 890), random.randint(30, 40)), 11, 50, 150)
         place_in_interval((random.randint(1160, 1170), random.randint(30, 40)), (random.randint(1790, 1800), random.randint(510, 520)), 11, 50, 150)
         place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 10, 50, 150)
-        place_in_interval((random.randint(670, 680), random.randint(850, 860)), (random.randint(210, 220), random.randint(520, 530)), 10, 50, 150)
+        place_in_interval((random.randint(670, 680), random.randint(850, 860)), (random.randint(210, 220), random.randint(520, 530)), 10, 10, 150)
         # Siege Machine
         click_after_random_delay(random.randint(320 + offset, 420 + offset), random.randint(920, 1040), 500, 1000)
         click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530), 300, 500)
@@ -299,7 +299,7 @@ def main():
                 click_after_random_delay(random.randint(60, 220), random.randint(780, 825))
                 click_after_random_delay(random.randint(1020, 1320), random.randint(640, 740), 50, 200)
                 break
-            if get_pixel_rgb((900, 955)) == (108, 187, 31):
+            if get_pixel_rgb((900, 955)) == (108, 187, 30):
                 # Battle ended
                 break
             time.sleep(0.05)
