@@ -256,10 +256,10 @@ def main():
         # Select troop  
         click_after_random_delay(random.randint(160 + offset, 260 + offset), random.randint(920, 1040))
         # Place troop
-        place_in_interval((random.randint(210, 220), random.randint(510, 520)), (random.randint(880, 890), random.randint(30, 40)), 11, 50, 150)
+        place_in_interval((random.randint(110, 130), random.randint(440, 460)), (random.randint(710, 730), random.randint(20, 40)), 11, 50, 150)
         place_in_interval((random.randint(1160, 1170), random.randint(30, 40)), (random.randint(1790, 1800), random.randint(510, 520)), 11, 50, 150)
         place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 10, 50, 150)
-        place_in_interval((random.randint(670, 680), random.randint(850, 860)), (random.randint(210, 220), random.randint(520, 530)), 10, 10, 150)
+        place_in_interval((random.randint(480, 500), random.randint(810, 830)), (random.randint(100, 120), random.randint(540, 560)), 10, 10, 150)
         # Siege Machine
         click_after_random_delay(random.randint(320 + offset, 420 + offset), random.randint(920, 1040), 500, 1000)
         click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530), 300, 500)
