@@ -2,7 +2,6 @@ import time
 from pynput import keyboard
 import mss
 import numpy as np
-from pynput.keyboard import Key, Controller
 import os
 import psutil
 import random
@@ -23,7 +22,8 @@ try:
 except Exception:
     pytesseract = None  # type: ignore[assignment]
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if pytesseract is not None:
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Try to access mouse controller; provide a Windows fallback if unavailable
 try:
@@ -49,6 +49,17 @@ running = True
 # Flag for if OCR failed on last, to allow if a certain number is bad
 last_ocr_failed = False  
 
+POLL_INTERVAL_SECONDS = 0.1
+COLOR_TOLERANCE = 3
+_mouse = None
+
+if MouseController is not None and Button is not None:
+    try:
+        _mouse = MouseController()
+    except Exception as e:
+        print(f"Mouse controller unavailable, falling back to Windows clicks: {e}")
+        _mouse = None
+
 def on_press(key):
     global running
     try:
@@ -64,10 +75,9 @@ def click_after_random_delay(x: int, y: int, lowtime: int = 1000, hightime: int 
     """Wait 1000-2000 ms randomly, then left-click at screen coordinate (x, y)."""
     delay_ms = random.randint(lowtime, hightime)
     time.sleep(delay_ms / 1000.0)
-    if MouseController is not None and Button is not None:
-        mouse = MouseController()
-        mouse.position = (x, y)
-        mouse.click(Button.left, 1)
+    if _mouse is not None and Button is not None:
+        _mouse.position = (x, y)
+        _mouse.click(Button.left, 1)
     else:
         # Fallback for Windows when pynput.mouse is unavailable
         try:
@@ -78,6 +88,10 @@ def click_after_random_delay(x: int, y: int, lowtime: int = 1000, hightime: int 
 
 def _ocr_number_from_region(bbox: Tuple[int, int, int, int], required_digits: Optional[int] = None) -> Optional[int]:
     """OCR a number from screen region with minimal preprocessing"""
+    if Image is None or pytesseract is None:
+        print("OCR unavailable: install Pillow and pytesseract to use trophy checks.")
+        return None
+
     left, top, right, bottom = bbox
     width, height = right - left, bottom - top
     
@@ -141,50 +155,72 @@ def trophies_above(target: int, required_digits: int = 4) -> bool:
     return value > int(target)
 
 
-def wait_until_pixel_not_color(expected_rgb: Tuple[int, int, int], point: Tuple[int, int]) -> bool:
-    """Wait until pixel (1,1) is no longer exactly expected_rgb.
-
-    Returns True when the pixel changes
-    """
-    poll_interval: float = 0.05
-
-    try:
-        with mss.mss() as sct:
-            while True:
-                if get_pixel_rgb(point) != expected_rgb:
-                    return True
-                time.sleep(poll_interval)
-    except Exception as e:
-        print(f"Pixel check failed: {e}")
+def colors_match(actual_rgb: Optional[Tuple[int, int, int]], expected_rgb: Tuple[int, int, int], tolerance: int = COLOR_TOLERANCE) -> bool:
+    if actual_rgb is None:
         return False
-    
-def wait_until_pixel_color(expected_rgb: Tuple[int, int, int], point: Tuple[int, int]) -> bool:
-    """Wait until pixel (1,1) is no longer exactly expected_rgb.
+    return all(abs(actual - expected) <= tolerance for actual, expected in zip(actual_rgb, expected_rgb))
 
-    Returns True when the pixel changes
-    """
-    poll_interval: float = 0.05
 
+def get_pixel_rgb(
+    point: Tuple[int, int],
+    sct: Optional[mss.mss] = None,
+    *,
+    log_errors: bool = True,
+) -> Optional[Tuple[int, int, int]]:
     try:
-        with mss.mss() as sct:
-            while True:
-                if get_pixel_rgb(point) == expected_rgb:
-                    return True
-                time.sleep(poll_interval)
-    except Exception as e:
-        print(f"Pixel check failed: {e}")
-        return False
-
-def get_pixel_rgb(point: Tuple[int, int]) -> Tuple[int, int, int]:
-    try:
-        with mss.mss() as sct:
+        if sct is None:
+            with mss.mss() as local_sct:
+                shot = local_sct.grab({"left": point[0], "top": point[1], "width": 1, "height": 1})
+        else:
             shot = sct.grab({"left": point[0], "top": point[1], "width": 1, "height": 1})
             # mss returns BGRA
-            b, g, r, _ = np.array(shot)[0, 0]
-            return (int(r), int(g), int(b))
+        b, g, r, _ = np.array(shot)[0, 0]
+        return (int(r), int(g), int(b))
+    except Exception as e:
+        if log_errors:
+            print(f"Pixel check failed: {e}")
+        return None
+
+
+def wait_until_pixel(
+    expected_rgb: Tuple[int, int, int],
+    point: Tuple[int, int],
+    *,
+    should_match: bool,
+) -> bool:
+    try:
+        with mss.mss() as sct:
+            while True:
+                last_rgb = get_pixel_rgb(point, sct)
+                if last_rgb is not None:
+                    is_match = colors_match(last_rgb, expected_rgb)
+                    if is_match == should_match:
+                        return True
+                time.sleep(POLL_INTERVAL_SECONDS)
     except Exception as e:
         print(f"Pixel check failed: {e}")
-        return (0, 0, 0)
+        return False
+
+
+def wait_until_pixel_not_color(
+    expected_rgb: Tuple[int, int, int],
+    point: Tuple[int, int],
+) -> bool:
+    return wait_until_pixel(
+        expected_rgb,
+        point,
+        should_match=False,
+    )
+
+def wait_until_pixel_color(
+    expected_rgb: Tuple[int, int, int],
+    point: Tuple[int, int],
+) -> bool:
+    return wait_until_pixel(
+        expected_rgb,
+        point,
+        should_match=True,
+    )
 
 
 def place_in_interval(point1: Tuple[int, int], point2: Tuple[int, int], number_of_units: int, lowtime: int = 200, hightime: int = 500) -> None:
@@ -194,11 +230,33 @@ def place_in_interval(point1: Tuple[int, int], point2: Tuple[int, int], number_o
         click_after_random_delay(int(x), int(y), lowtime, hightime)
 
 
+def wait_for_battle_to_finish() -> None:
+    try:
+        with mss.mss() as sct:
+            while True:
+                if colors_match(get_pixel_rgb((1680, 855), sct), (198, 203, 198)):
+                    # 1 Star
+                    click_after_random_delay(random.randint(50, 180), random.randint(830, 870))
+                    click_after_random_delay(random.randint(1000, 1250), random.randint(620, 720), 50, 200)
+                    break
+
+                if colors_match(get_pixel_rgb((900, 955), sct), (112, 187, 29)):
+                    # Battle ended
+                    break
+
+                time.sleep(POLL_INTERVAL_SECONDS)
+    except Exception as e:
+        print(f"Battle end check failed: {e}")
+
+
 def main():
-    # Increase the script's process priority to high
+    global running
+
+    # Keep normal priority so pixel polling cannot starve BlueStacks or VS Code.
     try:
         p = psutil.Process(os.getpid())
-        p.nice(psutil.HIGH_PRIORITY_CLASS)
+        if hasattr(psutil, "NORMAL_PRIORITY_CLASS"):
+            p.nice(psutil.NORMAL_PRIORITY_CLASS)
     except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
         print(f"Could not set process priority: {e}")
         logging.warning(f"Could not set process priority: {e}")
@@ -228,89 +286,80 @@ def main():
     # Start a keyboard listener in a separate thread to listen for the quit command
     listener = keyboard.Listener(on_press=on_press)
     listener.start()
-    keyboard_controller = Controller()
 
     # offset for event troop ~145
     offset = 0
 
     while running:
         print("cycle initiated")
-        wait_until_pixel_color((33, 221, 255), (77, 35))
+        wait_until_pixel_color((54, 236, 255), (77, 35))
         time.sleep(2)
         print("start cycle")
         # if (trophies_above(target)):
         #     exit(0)
         # Click attack
-        click_after_random_delay(random.randint(75, 175), random.randint(900, 1000), 100, 200)
+        click_after_random_delay(random.randint(50, 150), random.randint(920, 1020), 100, 200)
         # Click find match
-        click_after_random_delay(random.randint(130, 500), random.randint(740, 860), 500, 1000)
+        click_after_random_delay(random.randint(120, 440), random.randint(720, 800), 500, 1000)
         # Click attack on army screen
         # wait_until_pixel_color((189, 235, 137), (1620, 950))
-        click_after_random_delay(random.randint(1525, 1850), random.randint(930, 980), 300, 600)
+        click_after_random_delay(random.randint(1480, 1760), random.randint(900, 950), 300, 600)
         # Wait for base to be found
         time.sleep(2)
-        print("attcack")
-        wait_until_pixel_not_color((234, 239, 244), (0, 0))
-        wait_until_pixel_color((248, 13, 22), (90, 775))
+        print("attack")
+        wait_until_pixel_not_color((233, 242, 245), (0, 0))
+        wait_until_pixel_color((252, 94, 101), (90, 835))
         print("base found")
         # Select troop  
-        click_after_random_delay(random.randint(160 + offset, 260 + offset), random.randint(920, 1040))
+        click_after_random_delay(random.randint(310 + offset, 380 + offset), random.randint(920, 1040))
         # Place troop
         place_in_interval((random.randint(110, 130), random.randint(440, 460)), (random.randint(710, 730), random.randint(20, 40)), 11, 50, 150)
         place_in_interval((random.randint(1160, 1170), random.randint(30, 40)), (random.randint(1790, 1800), random.randint(510, 520)), 11, 50, 150)
-        place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 10, 50, 150)
-        place_in_interval((random.randint(480, 500), random.randint(810, 830)), (random.randint(100, 120), random.randint(540, 560)), 10, 10, 150)
-        # Siege Machine
-        click_after_random_delay(random.randint(320 + offset, 420 + offset), random.randint(920, 1040), 500, 1000)
-        click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530), 300, 500)
-        # EQ spells for siege
-        click_after_random_delay(random.randint(1070 + offset, 1180 + offset), random.randint(920, 1040), 200, 300)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 200, 300)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
-        click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
-        # EQ for heroes
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 200, 300)
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
-        click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        place_in_interval((random.randint(1790, 1800), random.randint(520, 530)), (random.randint(1370, 1380), random.randint(850, 860)), 11, 50, 150)
+        place_in_interval((random.randint(480, 500), random.randint(810, 830)), (random.randint(100, 120), random.randint(540, 560)), 11, 10, 150)
+        # # Siege Machine
+        # click_after_random_delay(random.randint(320 + offset, 420 + offset), random.randint(920, 1040), 500, 1000)
+        # click_after_random_delay(random.randint(1790, 1800), random.randint(510, 530), 300, 500)
+        # # EQ spells for siege
+        # click_after_random_delay(random.randint(930 + offset, 1010 + offset), random.randint(920, 1040), 200, 300)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 200, 300)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # click_after_random_delay(random.randint(1380, 1400), random.randint(500, 520), 20, 50)
+        # # EQ for heroes
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 200, 300)
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
+        # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         # Place heroes
-        click_after_random_delay(random.randint(460 + offset, 560 + offset), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(430 + offset, 510 + offset), random.randint(920, 1040), 300, 400)
         click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 400)
-        click_after_random_delay(random.randint(620 + offset, 720 + offset), random.randint(920, 980), 300, 400)
+        click_after_random_delay(random.randint(550 + offset, 640 + offset), random.randint(920, 980), 300, 400)
         click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 400)
-        click_after_random_delay(random.randint(760 + offset, 860 + offset), random.randint(920, 970), 300, 400)
+        click_after_random_delay(random.randint(670 + offset, 750 + offset), random.randint(920, 970), 300, 400)
         click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 400)
-        click_after_random_delay(random.randint(910 + offset, 1020 + offset), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(800 + offset, 870 + offset), random.randint(920, 1040), 300, 400)
         click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 400)
         # Activate abilities
-        click_after_random_delay(random.randint(460 + offset, 560 + offset), random.randint(920, 1040))
-        click_after_random_delay(random.randint(620 + offset, 720 + offset), random.randint(920, 1040), 100, 200)
-        click_after_random_delay(random.randint(910 + offset, 1020 + offset), random.randint(920, 1040), 100, 200)
-        click_after_random_delay(random.randint(760 + offset, 860 + offset), random.randint(920, 1040), 2000, 2100)
+        click_after_random_delay(random.randint(430 + offset, 510 + offset), random.randint(920, 1040))
+        click_after_random_delay(random.randint(550 + offset, 640 + offset), random.randint(920, 1040), 100, 200)
+        click_after_random_delay(random.randint(810 + offset, 870 + offset), random.randint(920, 1040), 100, 200)
+        click_after_random_delay(random.randint(670 + offset, 750 + offset), random.randint(920, 1040), 2000, 2100)
         # End battle
-        while True:
-            if get_pixel_rgb((1629, 809)) == (196, 200, 195):
-                # 1 Star
-                click_after_random_delay(random.randint(60, 220), random.randint(780, 825))
-                click_after_random_delay(random.randint(1020, 1320), random.randint(640, 740), 50, 200)
-                break
-            if get_pixel_rgb((900, 955)) == (108, 187, 30):
-                # Battle ended
-                break
-            time.sleep(0.05)
+        wait_for_battle_to_finish()
 
         # Return to base
-        click_after_random_delay(random.randint(840, 1080), random.randint(880, 960), 800, 950)
+        click_after_random_delay(random.randint(900, 1050), random.randint(900, 970), 800, 950)
         print("returned to base")
 
 
-
-    listener.join()
+    running = False
+    listener.stop()
+    listener.join(timeout=1)
 
 
 
