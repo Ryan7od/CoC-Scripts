@@ -193,7 +193,7 @@ def wait_until_pixel(
             while True:
                 last_rgb = get_pixel_rgb(point, sct)
                 if last_rgb is not None:
-                    is_match = colors_match(last_rgb, expected_rgb)
+                    is_match = colors_match(last_rgb, expected_rgb, tolerance=2)
                     if is_match == should_match:
                         return True
                 time.sleep(POLL_INTERVAL_SECONDS)
@@ -234,10 +234,10 @@ def wait_for_battle_to_finish() -> None:
     try:
         with mss.mss() as sct:
             while True:
-                if colors_match(get_pixel_rgb((1680, 855), sct), (198, 203, 198)):
+                if colors_match(get_pixel_rgb((1680, 855), sct), (203, 215, 228)):
                     # 1 Star
                     click_after_random_delay(random.randint(50, 180), random.randint(830, 870))
-                    click_after_random_delay(random.randint(1000, 1250), random.randint(620, 720), 50, 200)
+                    click_after_random_delay(random.randint(1000, 1250), random.randint(620, 720), 200, 300)
                     break
 
                 if colors_match(get_pixel_rgb((900, 955), sct), (112, 187, 29)):
@@ -247,6 +247,34 @@ def wait_for_battle_to_finish() -> None:
                 time.sleep(POLL_INTERVAL_SECONDS)
     except Exception as e:
         print(f"Battle end check failed: {e}")
+
+
+def check_specials() -> None:
+    startTime = time.time()
+    try:
+        with mss.mss() as sct:
+            while time.time() < startTime + 5:
+                if colors_match(get_pixel_rgb((950, 70), sct), (239, 231, 214)):
+                    # Chest
+                    click_after_random_delay(random.randint(850, 1050), random.randint(500, 700))
+                    click_after_random_delay(random.randint(850, 1050), random.randint(500, 700), 100, 300)
+                    click_after_random_delay(random.randint(850, 1050), random.randint(500, 700), 100, 300)
+                    click_after_random_delay(random.randint(850, 1050), random.randint(500, 700), 100, 300)
+
+                    click_after_random_delay(random.randint(850, 1100), random.randint(950, 1000), 2500, 3500)
+
+                    time.sleep(2)
+                    break
+
+                if colors_match(get_pixel_rgb((1000, 200), sct), (62, 47, 185)):
+                    # Star Bonus
+                    click_after_random_delay(random.randint(850, 1050), random.randint(875, 950))
+
+                    break
+
+                time.sleep(POLL_INTERVAL_SECONDS)
+    except Exception as e:
+        print(f"Special check failed: {e}")
 
 
 def main():
@@ -292,7 +320,7 @@ def main():
 
     while running:
         print("cycle initiated")
-        wait_until_pixel_color((54, 236, 255), (77, 35))
+        wait_until_pixel_color((255, 255, 255), (60, 45))
         time.sleep(2)
         print("start cycle")
         # if (trophies_above(target)):
@@ -308,10 +336,10 @@ def main():
         time.sleep(2)
         print("attack")
         wait_until_pixel_not_color((233, 242, 245), (0, 0))
-        wait_until_pixel_color((252, 94, 101), (90, 835))
+        wait_until_pixel_color((252, 94, 96), (90, 835))
         print("base found")
         # Select troop  
-        click_after_random_delay(random.randint(310 + offset, 380 + offset), random.randint(920, 1040))
+        click_after_random_delay(random.randint(310 + offset, 380 + offset), random.randint(940, 1040))
         # Place troop
         place_in_interval((random.randint(110, 130), random.randint(440, 460)), (random.randint(710, 730), random.randint(20, 40)), 11, 50, 150)
         place_in_interval((random.randint(1160, 1170), random.randint(30, 40)), (random.randint(1790, 1800), random.randint(510, 520)), 11, 50, 150)
@@ -336,13 +364,13 @@ def main():
         # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         # click_after_random_delay(random.randint(1250, 1300), random.randint(550, 600), 20, 50)
         # Place heroes
-        click_after_random_delay(random.randint(430 + offset, 510 + offset), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(430 + offset, 510 + offset), random.randint(940, 1040), 300, 400)
         click_after_random_delay(random.randint(1410, 1430), random.randint(800, 820), 300, 400)
-        click_after_random_delay(random.randint(550 + offset, 640 + offset), random.randint(920, 980), 300, 400)
+        click_after_random_delay(random.randint(550 + offset, 640 + offset), random.randint(940, 980), 300, 400)
         click_after_random_delay(random.randint(1470, 1490), random.randint(755, 770), 300, 400)
-        click_after_random_delay(random.randint(670 + offset, 750 + offset), random.randint(920, 970), 300, 400)
+        click_after_random_delay(random.randint(670 + offset, 750 + offset), random.randint(940, 970), 300, 400)
         click_after_random_delay(random.randint(1500, 1520), random.randint(730, 745), 300, 400)
-        click_after_random_delay(random.randint(800 + offset, 870 + offset), random.randint(920, 1040), 300, 400)
+        click_after_random_delay(random.randint(800 + offset, 870 + offset), random.randint(940, 1040), 300, 400)
         click_after_random_delay(random.randint(1530, 1550), random.randint(707, 720), 300, 400)
         # Activate abilities
         click_after_random_delay(random.randint(430 + offset, 510 + offset), random.randint(920, 1040))
@@ -353,7 +381,9 @@ def main():
         wait_for_battle_to_finish()
 
         # Return to base
-        click_after_random_delay(random.randint(900, 1050), random.randint(900, 970), 800, 950)
+        click_after_random_delay(random.randint(900, 1050), random.randint(900, 970))
+
+        check_specials()
         print("returned to base")
 
 
